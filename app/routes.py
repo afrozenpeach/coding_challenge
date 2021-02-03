@@ -22,14 +22,24 @@ def health_check():
 
 
 @app.route("/combined-stats/<org>", methods=["GET"])
-def combined(org):
+def combined_single(org):
+    return combined_double(org, org)
+
+
+@app.route("/combined-stats/bitbucket/<bitbucket_org>/github/<github_org>", methods=["GET"])
+def combined_double_reverse(bitbucket_org, github_org):
+    return combined_double(github_org, bitbucket_org)
+
+
+@app.route("/combined-stats/github/<github_org>/bitbucket/<bitbucket_org>", methods=["GET"])
+def combined_double(github_org, bitbucket_org):
     """
     Gets the combined stats from bitbucket and github
     """
-    g_resp = github(org)
+    g_resp = github(github_org)
     g = g_resp.json()
 
-    b_resp = bitbucket(org)
+    b_resp = bitbucket(bitbucket_org)
     b = b_resp.json()
 
     resp = {
