@@ -33,25 +33,29 @@ def combined(org):
     b = b_resp.json()
 
     resp = {
-        "repos": 0,
-        "original_repos": 0,
-        "forked_repos": 0,
+        "repos": {
+            "total": 0,
+            "original": 0,
+            "forked": 0,
+            "unknown_origin": 0
+        },
         "watchers": 0,
         "languages": []
     }
 
     for i in g:
-        resp["repos"] += 1
+        resp["repos"]["total"] += 1
         if i["fork"]:
-            resp["forked_repos"] += 1
+            resp["repos"]["forked"] += 1
         else:
-            resp["original_repos"] += 1
+            resp["repos"]["original"] += 1
         resp["watchers"] += i["watchers"]
         if i["language"] and i["language"].lower() not in resp["languages"]:
             resp["languages"].append(i["language"].lower())
 
     for i in b["values"]:
-        resp["repos"] += 1
+        resp["repos"]["total"] += 1
+        resp["repos"]["unknown_origin"] += 1
         resp["watchers"] += bitbucket_watchers(i["links"]["watchers"]["href"])
         if i["language"] and i["language"].lower() not in resp["languages"]:
             resp["languages"].append(i["language"].lower())
