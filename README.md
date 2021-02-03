@@ -28,17 +28,19 @@ python -m run
 
 ### Making Requests
 
+Check the health of the api server:
+
 ```
 curl -i "http://127.0.0.1:5000/health-check"
 ```
 
-```
-curl -i "http://127.0.0.1:5000/combined-stats/<org>"
-```
+Get the combined stats from github and bitbucket when the organization name is the same:
 
 ```
 curl -i "http://127.0.0.1:5000/combined-stats/<org>"
 ```
+
+Get the combined stats from github and bitbucket when the organization names are different:
 
 ```
 curl -i "http://127.0.0.1:5000/combined-stats/bitbucket/<bitbucket_org>/github/<github_org>"
