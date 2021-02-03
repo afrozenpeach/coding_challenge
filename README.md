@@ -50,6 +50,8 @@ curl -i "http://127.0.0.1:5000/combined-stats/github/<github_org>/bitbucket/<bit
 ## What'd I'd like to improve on...
 
 - A better way of handling the differing organization names for bitbucket and github. Maybe using a different verb?
+- Find a faster method of getting watchers from bitbucket
+- Find a faster method of getting topics from github
 - Better error handling - build a custom error page that displays detailed error information in addition to a status code
 - Instead of using a generic object for the combined profile, make an actual class
 - Make a class for github and bitbucket, that both inherit from a base class
