@@ -36,11 +36,14 @@ def combined_double(github_org, bitbucket_org):
     """
     Gets the combined stats from bitbucket and github
     """
-    g_resp = github(github_org)
-    g = g_resp.json()
+    try:
+        g_resp = github(github_org)
+        g = g_resp.json()
 
-    b_resp = bitbucket(bitbucket_org)
-    b = b_resp.json()
+        b_resp = bitbucket(bitbucket_org)
+        b = b_resp.json()
+    except Exception as err:
+        return Response(err, status=500)
 
     resp = {
         "repos": {
@@ -78,6 +81,8 @@ def github(org):
     Gets the github statistics
     """
     resp = requests.get('https://api.github.com/orgs/' + org + '/repos')
+    if resp.status_code != 200:
+        raise Exception("Github status code: " + str(resp.status_code))
     return resp
 
 
@@ -86,6 +91,8 @@ def bitbucket(org):
     gets the bitbucket statistics
     """
     resp = requests.get('https://api.bitbucket.org/2.0/repositories/' + org)
+    if resp.status_code != 200:
+        raise Exception("Bitbucket status code: " + str(resp.status_code))
     return resp
 
 
@@ -94,5 +101,7 @@ def bitbucket_watchers(url):
     gets the watcher count for bitbucket
     """
     resp = requests.get(url)
+    if resp.status_code != 200:
+        raise Exception("Bitbucket status code: " + str(resp.status_code))
     j = resp.json()
     return j["size"]
