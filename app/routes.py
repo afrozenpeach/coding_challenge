@@ -23,11 +23,17 @@ def health_check():
 
 @app.route("/combined-stats/<org>", methods=["GET"])
 def combined_single(org):
+    """
+    Simple script if both org names are the same across both platforms
+    """
     return combined_double(org, org)
 
 
 @app.route("/combined-stats/bitbucket/<bitbucket_org>/github/<github_org>", methods=["GET"])
 def combined_double_reverse(bitbucket_org, github_org):
+    """
+    Support both github -> bitbucket and bitbucket -> github ordering
+    """
     return combined_double(github_org, bitbucket_org)
 
 
@@ -37,6 +43,7 @@ def combined_double(github_org, bitbucket_org):
     Gets the combined stats from bitbucket and github
     """
     try:
+        # each function throws an exception if the status is something other than 200
         g_resp = github(github_org)
         g = g_resp.json()
 
@@ -68,6 +75,7 @@ def combined_double(github_org, bitbucket_org):
 
     for i in b["values"]:
         resp["repos"]["total"] += 1
+        # bitbucket doesn't seem to have a way to tell if a repo is a fork or not
         resp["repos"]["unknown_origin"] += 1
         resp["watchers"] += bitbucket_watchers(i["links"]["watchers"]["href"])
         if i["language"] and i["language"].lower() not in resp["languages"]:
@@ -88,7 +96,7 @@ def github(org):
 
 def bitbucket(org):
     """
-    gets the bitbucket statistics
+    Gets the bitbucket statistics
     """
     resp = requests.get('https://api.bitbucket.org/2.0/repositories/' + org)
     if resp.status_code != 200:
@@ -98,7 +106,7 @@ def bitbucket(org):
 
 def bitbucket_watchers(url):
     """
-    gets the watcher count for bitbucket
+    Gets the watcher count for bitbucket
     """
     resp = requests.get(url)
     if resp.status_code != 200:
