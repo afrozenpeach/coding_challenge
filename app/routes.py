@@ -114,6 +114,8 @@ def bitbucket_watchers(url):
     """
     Gets the watcher count for bitbucket
     """
+    # I'm not sure that I like just accepting the url as passed in here
+    # I might consider hard coding the url pattern instead, but what if the url pattern changes and the base api doesn't?
     resp = requests.get(url)
     if resp.status_code != 200:
         raise Exception("Bitbucket status code: " + str(resp.status_code))
