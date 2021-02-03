@@ -49,37 +49,43 @@ def combined_double(github_org, bitbucket_org):
 
         b_resp = bitbucket(bitbucket_org)
         b = b_resp.json()
+
+        resp = {
+            "repos": {
+                "total": 0,
+                "original": 0,
+                "forked": 0,
+                "unknown_origin": 0
+            },
+            "watchers": 0,
+            "languages": [],
+            "topics": []
+        }
+
+        for i in g:
+            resp["repos"]["total"] += 1
+            if i["fork"]:
+                resp["repos"]["forked"] += 1
+            else:
+                resp["repos"]["original"] += 1
+            resp["watchers"] += i["watchers"]
+            if i["language"] and i["language"].lower() not in resp["languages"]:
+                resp["languages"].append(i["language"].lower())
+            for t in github_topics(github_org, i["name"]):
+                if t.lower() not in resp["topics"]:
+                    resp["topics"].append(t)
+
+        for i in b["values"]:
+            resp["repos"]["total"] += 1
+            # bitbucket doesn't seem to have a way to tell if a repo is a fork or not
+            resp["repos"]["unknown_origin"] += 1
+            resp["watchers"] += bitbucket_watchers(
+                i["links"]["watchers"]["href"])
+            if i["language"] and i["language"].lower() not in resp["languages"]:
+                resp["languages"].append(i["language"].lower())
+            # bitbucket doesn't seem to have topics
     except Exception as err:
         return Response(err, status=500)
-
-    resp = {
-        "repos": {
-            "total": 0,
-            "original": 0,
-            "forked": 0,
-            "unknown_origin": 0
-        },
-        "watchers": 0,
-        "languages": []
-    }
-
-    for i in g:
-        resp["repos"]["total"] += 1
-        if i["fork"]:
-            resp["repos"]["forked"] += 1
-        else:
-            resp["repos"]["original"] += 1
-        resp["watchers"] += i["watchers"]
-        if i["language"] and i["language"].lower() not in resp["languages"]:
-            resp["languages"].append(i["language"].lower())
-
-    for i in b["values"]:
-        resp["repos"]["total"] += 1
-        # bitbucket doesn't seem to have a way to tell if a repo is a fork or not
-        resp["repos"]["unknown_origin"] += 1
-        resp["watchers"] += bitbucket_watchers(i["links"]["watchers"]["href"])
-        if i["language"] and i["language"].lower() not in resp["languages"]:
-            resp["languages"].append(i["language"].lower())
 
     return Response(json.dumps(resp), status=200)
 
@@ -113,3 +119,18 @@ def bitbucket_watchers(url):
         raise Exception("Bitbucket status code: " + str(resp.status_code))
     j = resp.json()
     return j["size"]
+
+
+def github_topics(org, repo):
+    """
+    Gets the topics for a repo
+    """
+    s = requests.session()
+    # github has an accept header to get topics as it's a preview feature
+    s.headers.update({"accept": "application/vnd.github.mercy-preview+json"})
+    resp = s.get('https://api.github.com/repos/' +
+                 org + '/' + repo + '/topics')
+    if resp.status_code != 200:
+        raise Exception("Github status code: " + str(resp.status_code))
+    j = resp.json()
+    return j["names"]
